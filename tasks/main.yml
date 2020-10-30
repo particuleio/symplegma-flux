@@ -1,0 +1,44 @@
+---
+- name: GitOps | Deploy FluxCD
+  become: no
+  community.kubernetes.helm:
+    name: "{{ flux_release_name }}"
+    chart_repo_url: "{{ repo_url }}"
+    chart_ref: flux
+    release_namespace: "{{ flux_namespace }}"
+    create_namespace: "{{ flux_create_ns }}"
+    update_repo_cache: yes
+    wait: yes
+    release_values: "{{ values_flux }}"
+    kubeconfig: "{{ kubeconfig }}"
+  when: flux_enabled
+
+- name: GitOps | Deploy Helm Operator
+  become: no
+  community.kubernetes.helm:
+    name: "{{ helm_operator_release_name }}"
+    chart_repo_url: "{{ repo_url }}"
+    chart_ref: helm-operator
+    release_namespace: "{{ helm_operator_namespace }}"
+    create_namespace: "{{ helm_operator_create_ns }}"
+    update_repo_cache: yes
+    wait: yes
+    release_values: "{{ values_helm_operator }}"
+    kubeconfig: "{{ kubeconfig }}"
+  when: helm_operator_enabled
+
+- name: GitOps | Get Flux Logs
+  community.kubernetes.k8s_log:
+    kubeconfig: "{{ kubeconfig }}"
+    api_version: apps/v1
+    kind: Deployment
+    namespace: flux
+    name: flux
+  register: fluxlogs
+  become: no
+  when: flux_enabled
+
+- name: GitOps | display post install message
+  debug:
+    msg: "{{ fluxlogs.log | regex_search('ssh-rsa.*') }}"
+  when: flux_enabled

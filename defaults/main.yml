@@ -1,0 +1,27 @@
+---
+repo_url: https://charts.fluxcd.io
+
+flux_enabled: true
+flux_release_name: flux
+flux_namespace: flux
+flux_create_ns: yes
+flux_values:
+  git:
+    url: ssh://git@github.com/gitops/gitops.git
+    branch: master
+    path: flux/resources
+  syncGarbageCollection:
+    enabled: true
+
+helm_operator_enabled: true
+helm_operator_release_name: helm-operator
+helm_operator_namespace: flux
+helm_operator_create_ns: yes
+helm_operator_values:
+  helm:
+    versions: v3
+  git:
+    ssh:
+      secretName: flux-git-deploy
+
+kubeconfig: admin.conf
